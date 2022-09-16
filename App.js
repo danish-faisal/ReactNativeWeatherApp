@@ -1,5 +1,7 @@
+import axios from "axios";
 import { useCallback, useState } from "react";
 import {
+  ActivityIndicator,
   Button,
   ImageBackground,
   StyleSheet,
@@ -11,8 +13,26 @@ import {
 export default function App() {
   const [cityName, setCityName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [weatherData, setWeatherData] = useState([]);
 
-  const fetchDataHandler = useCallback(() => {}, []);
+  const api = {
+    key: "798e822946ee9f2bc7311d1b28ccbb8c",
+    baseUrl: "https://api.openweathermap.org/data/2.5/weather",
+  };
+
+  const fetchDataHandler = useCallback(() => {
+    setLoading(true);
+    setCityName("");
+    axios({
+      method: "GET",
+      url: `${api.baseUrl}?q=${cityName}&units=metric&appid=${api.key}`,
+    })
+      .then((res) => {
+        setWeatherData(res.data);
+      })
+      .catch((err) => console.dir(err))
+      .finally(() => setLoading(false));
+  }, [cityName, api.key]);
 
   return (
     <View style={styles.container}>
@@ -33,6 +53,11 @@ export default function App() {
             <Button title="Search" color="#df8e00" onPress={fetchDataHandler} />
           </View>
         </View>
+        {loading && (
+          <View style={styles.loadingIndicator}>
+            <ActivityIndicator size={100} color={"#000"} />
+          </View>
+        )}
       </ImageBackground>
     </View>
   );
@@ -63,5 +88,8 @@ const styles = StyleSheet.create({
   button: {
     marginVertical: 16,
     marginHorizontal: 8,
+  },
+  loadingIndicator: {
+    marginVertical: 32,
   },
 });
